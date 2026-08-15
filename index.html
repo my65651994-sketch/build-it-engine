@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Build It! Engine</title>
+    <style>
+        body { display: flex; height: 100vh; margin: 0; font-family: sans-serif; }
+        #sidebar { width: 30%; border-right: 1px solid #ccc; padding: 10px; background: #f4f4f4; }
+        #canvas { width: 70%; padding: 20px; background: #fff; border: 2px dashed #aaa; position: relative; }
+        .component { padding: 10px; margin: 5px; background: #ddd; cursor: grab; border: 1px solid #999; }
+        .dropped-item { padding: 10px; margin: 5px; border: 1px solid #333; background: #eee; }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h3>Palette</h3>
+    <div class="component" draggable="true" ondragstart="drag(event)" id="btn">Button</div>
+    <div class="component" draggable="true" ondragstart="drag(event)" id="txt">Text Field</div>
+</div>
+
+<div id="canvas" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <h3>Canvas</h3>
+</div>
+
+<script>
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+    
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var node = document.createElement("div");
+        node.className = "dropped-item";
+        node.innerText = (data === "btn") ? "Button" : "Text Field";
+        document.getElementById("canvas").appendChild(node);
+        console.log("Component added to UI Tree:", data);
+    }
+</script>
+
+</body>
+</html>
+    
+
+
+
+
+
+
+
+
+
+
