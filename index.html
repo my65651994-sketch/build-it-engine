@@ -1,52 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Build It! Engine</title>
+    <title>Build It! Engine - Studio</title>
     <style>
-        body { display: flex; height: 100vh; margin: 0; font-family: sans-serif; }
-        #sidebar { width: 30%; border-right: 1px solid #ccc; padding: 10px; background: #f4f4f4; }
-        #canvas { width: 70%; padding: 20px; background: #fff; border: 2px dashed #aaa; position: relative; }
-        .component { padding: 10px; margin: 5px; background: #ddd; cursor: grab; border: 1px solid #999; }
-        .dropped-item { padding: 10px; margin: 5px; border: 1px solid #333; background: #eee; }
+        body { display: flex; flex-direction: column; height: 100vh; margin: 0; font-family: sans-serif; }
+        header { background: #111; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        #sidebar { width: 25%; border-right: 1px solid #ccc; padding: 15px; background: #f4f4f4; }
+        #canvas { width: 75%; padding: 20px; background: #fff; border: 2px dashed #aaa; overflow-y: auto; position: relative; }
+        .component { padding: 10px; margin: 8px 0; background: #fff; cursor: grab; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .dropped-item { padding: 12px; margin: 10px 0; border: 1px solid #333; background: #fafafa; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        button.export-btn { background: #10B981; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="sidebar">
-    <h3>Palette</h3>
-    <div class="component" draggable="true" ondragstart="drag(event)" id="btn">Button</div>
-    <div class="component" draggable="true" ondragstart="drag(event)" id="txt">Text Field</div>
-</div>
+<header>
+    <h2>Build It! Studio</h2>
+    <button class="export-btn" onclick="exportProject()">Export Project JSON</button>
+</header>
 
-<div id="canvas" ondrop="drop(event)" ondragover="allowDrop(event)">
-    <h3>Canvas</h3>
+<div class="main-container">
+    <div id="sidebar">
+        <h3>UI Components</h3>
+        <div class="component" draggable="true" ondragstart="drag(event)" id="btn">Button Component</div>
+        <div class="component" draggable="true" ondragstart="drag(event)" id="txt">Text Input Field</div>
+        <div class="component" draggable="true" ondragstart="drag(event)" id="img">Image Container</div>
+    </div>
+
+    <div id="canvas" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <h3>Visual Canvas</h3>
+        <p id="placeholder" style="color: #888;">Drag and drop components here...</p>
+    </div>
 </div>
 
 <script>
+    let appState = [];
+
     function allowDrop(ev) { ev.preventDefault(); }
     function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
     
     function drop(ev) {
         ev.preventDefault();
-        var data = ev.dataTransfer.getData("text");
-        var node = document.createElement("div");
+        const placeholder = document.getElementById("placeholder");
+        if (placeholder) placeholder.style.display = "none";
+
+        const data = ev.dataTransfer.getData("text");
+        const componentId = 'comp_' + Date.now();
+        
+        let typeName = "Unknown";
+        if (data === "btn") typeName = "Button";
+        if (data === "txt") typeName = "Text Input";
+        if (data === "img") typeName = "Image";
+
+        // Push to state
+        appState.push({ id: componentId, type: typeName, properties: { text: typeName } });
+
+        // Render on canvas
+        const node = document.createElement("div");
         node.className = "dropped-item";
-        node.innerText = (data === "btn") ? "Button" : "Text Field";
+        node.innerHTML = `<span><strong>${typeName}</strong> (${componentId})</span> <button onclick="removeItem('${componentId}', this)" style="background:red; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">Delete</button>`;
         document.getElementById("canvas").appendChild(node);
-        console.log("Component added to UI Tree:", data);
+        
+        console.log("Current App State:", appState);
+    }
+
+    function removeItem(id, element) {
+        appState = appState.filter(item => item.id !== id);
+        element.parentElement.remove();
+        console.log("Updated App State:", appState);
+    }
+
+    function exportProject() {
+        if (appState.length === 0) {
+            alert("Your canvas is empty! Add components before exporting.");
+            return;
+        }
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "project_blueprint.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
     }
 </script>
 
 </body>
 </html>
-    
-
-
-
-
-
-
-
-
-
 
