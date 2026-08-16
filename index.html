@@ -9,7 +9,8 @@
         #sidebar { width: 25%; border-right: 1px solid #ccc; padding: 15px; background: #f4f4f4; }
         #canvas { width: 40%; padding: 20px; background: #fff; border: 2px dashed #aaa; overflow-y: auto; position: relative; }
         #code-panel { width: 35%; background: #1e1e1e; color: #4af626; padding: 15px; overflow-y: auto; font-family: monospace; font-size: 12px; }
-        .component { padding: 10px; margin: 8px 0; background: #fff; cursor: grab; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .component { padding: 10px; margin: 8px 0; background: #fff; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; font-weight: bold; }
+        .component:active { background: #e0e0e0; }
         .dropped-item { padding: 12px; margin: 10px 0; border: 1px solid #333; background: #fafafa; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
         button.export-btn { background: #10B981; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
@@ -23,15 +24,15 @@
 
 <div class="main-container">
     <div id="sidebar">
-        <h3>UI Components</h3>
-        <div class="component" draggable="true" ondragstart="drag(event)" id="btn">Button Component</div>
-        <div class="component" draggable="true" ondragstart="drag(event)" id="txt">Text Input Field</div>
-        <div class="component" draggable="true" ondragstart="drag(event)" id="img">Image Container</div>
+        <h3>Components (Tap to Add)</h3>
+        <div class="component" onclick="addComponent('btn')" id="btn">+ Button</div>
+        <div class="component" onclick="addComponent('txt')" id="txt">+ Text Input</div>
+        <div class="component" onclick="addComponent('img')" id="img">+ Image</div>
     </div>
 
-    <div id="canvas" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <div id="canvas">
         <h3>Visual Canvas</h3>
-        <p id="placeholder" style="color: #888;">Drag and drop components here...</p>
+        <p id="placeholder" style="color: #888;">Tap components to add them here...</p>
     </div>
     
     <div id="code-panel">
@@ -43,21 +44,16 @@
 <script>
     let appState = [];
 
-    function allowDrop(ev) { ev.preventDefault(); }
-    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
-    
-    function drop(ev) {
-        ev.preventDefault();
+    function addComponent(typeId) {
         const placeholder = document.getElementById("placeholder");
         if (placeholder) placeholder.style.display = "none";
 
-        const data = ev.dataTransfer.getData("text");
         const componentId = 'comp_' + Date.now();
         
         let typeName = "Unknown";
-        if (data === "btn") typeName = "Button";
-        if (data === "txt") typeName = "Text Input";
-        if (data === "img") typeName = "Image";
+        if (typeId === "btn") typeName = "Button";
+        if (typeId === "txt") typeName = "Text Input";
+        if (typeId === "img") typeName = "Image";
 
         appState.push({ id: componentId, type: typeName, properties: { text: typeName } });
 
@@ -70,6 +66,9 @@
     function removeItem(id, element) {
         appState = appState.filter(item => item.id !== id);
         element.parentElement.remove();
+        if (appState.length === 0) {
+            document.getElementById("placeholder").style.display = "block";
+        }
     }
 
     async function compileProject() {
@@ -98,3 +97,4 @@
 
 </body>
 </html>
+
